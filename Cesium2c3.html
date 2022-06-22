@@ -132,7 +132,6 @@
       width: 15px;
       /* height: 15px; */
     }
-
   </style>
 </head>
 
@@ -153,111 +152,111 @@
 </body>
 <script type="module">
   var viewer = new Cesium.Viewer('cesiumContainer', {
-        imageryProvider: new Cesium.ArcGisMapServerImageryProvider({
-            url : 'https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer',
-        }),
-        shouldAnimate: true,
-        timeline: false,
-        animation: false,
-        shadow:false,
-        mapProjection: new Cesium.WebMercatorProjection(),
-    });
+    imageryProvider: new Cesium.ArcGisMapServerImageryProvider({
+      url: 'https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer',
+    }),
+    shouldAnimate: true,
+    timeline: false,
+    animation: false,
+    shadow: false,
+    mapProjection: new Cesium.WebMercatorProjection(),
+  });
 
-    viewer._cesiumWidget._creditContainer.style.display = 'none'; // 隐藏版权
-    viewer.scene.globe.show = true;
-    viewer.scene.debugShowFramesPerSecond = true;
+  viewer._cesiumWidget._creditContainer.style.display = 'none'; // 隐藏版权
+  viewer.scene.globe.show = true;
+  viewer.scene.debugShowFramesPerSecond = true;
 
-    var tilesets = new Cesium.Cesium3DTileset({
+  var tilesets = new Cesium.Cesium3DTileset({
     url: 'data/Tileset/tileset.json',
-        skipLevelOfDetail: true,
-        maximumMemoryUsage: 1500,
-        maximumScreenSpaceError: 16,
-        // cullRequestsWhileMovingMultiplier: 100,
-        dynamicScreenSpaceError: false,
-        preferLeaves: true,
-        debugShowContentBoundingVolume: false,
-        debugShowViewerRequestVolume: false,
-        debugShowBoundingVolume: false,
+    skipLevelOfDetail: true,
+    maximumMemoryUsage: 1500,
+    maximumScreenSpaceError: 16,
+    // cullRequestsWhileMovingMultiplier: 100,
+    dynamicScreenSpaceError: false,
+    preferLeaves: true,
+    debugShowContentBoundingVolume: false,
+    debugShowViewerRequestVolume: false,
+    debugShowBoundingVolume: false,
+  });
+  tilesets.readyPromise
+    .then(function (tileset) {
+      viewer.scene.primitives.add(tileset);
+      viewer.flyTo(tileset);
+    })
+    .catch(function (error) {
+      console.log(error);
     });
-    tilesets.readyPromise
-        .then(function (tileset) {
-            viewer.scene.primitives.add(tileset);
-            viewer.flyTo(tileset);
-        })
-        .catch(function (error) {
-            console.log(error);
-        });
 
 
-    var linkUtil =  new Cesium2c3()
-    document.getElementById('point').onclick = function(){
-        if(linkUtil.isActive)return
-        linkUtil.active(viewer)
-    }
-    document.getElementById('clear').onclick = function(){
-        linkUtil.deactive()
-    }
+  var linkUtil = new Cesium2c3()
+  document.getElementById('point').onclick = function () {
+    if (linkUtil.isActive) return
+    linkUtil.active(viewer)
+  }
+  document.getElementById('clear').onclick = function () {
+    linkUtil.deactive()
+  }
 
-    // 放大缩小
-    document.getElementById('zoomIn').onclick = function () {
-        // 获取当前镜头位置的笛卡尔坐标
-        let cameraPos = viewer.camera.position;
-        // 获取当前坐标系标准
-        let ellipsoid = viewer.scene.globe.ellipsoid;
+  // 放大缩小
+  document.getElementById('zoomIn').onclick = function () {
+    // 获取当前镜头位置的笛卡尔坐标
+    let cameraPos = viewer.camera.position;
+    // 获取当前坐标系标准
+    let ellipsoid = viewer.scene.globe.ellipsoid;
 
-        // 根据坐标系标准，将笛卡尔坐标转换为地理坐标
-        let cartographic = ellipsoid.cartesianToCartographic(cameraPos);
-        // 获取镜头的高度
-        let height = cartographic.height;
-        // if (height < 40) {
-        //   return
-        // }
-        // 镜头拉近
-        viewer.camera.zoomIn(height / 3);
-    };
+    // 根据坐标系标准，将笛卡尔坐标转换为地理坐标
+    let cartographic = ellipsoid.cartesianToCartographic(cameraPos);
+    // 获取镜头的高度
+    let height = cartographic.height;
+    // if (height < 40) {
+    //   return
+    // }
+    // 镜头拉近
+    viewer.camera.zoomIn(height / 3);
+  };
 
-    document.getElementById('zoomOut').onclick = function () {
-        // 获取当前镜头位置的笛卡尔坐标
-        let cameraPos = viewer.camera.position;
-        // 获取当前坐标系标准
-        let ellipsoid = viewer.scene.globe.ellipsoid;
+  document.getElementById('zoomOut').onclick = function () {
+    // 获取当前镜头位置的笛卡尔坐标
+    let cameraPos = viewer.camera.position;
+    // 获取当前坐标系标准
+    let ellipsoid = viewer.scene.globe.ellipsoid;
 
-        // 根据坐标系标准，将笛卡尔坐标转换为地理坐标
-        let cartographic = ellipsoid.cartesianToCartographic(cameraPos);
-        // 获取镜头的高度
-        let height = cartographic.height;
-        // if (height < 40) {
-        //   return
-        // }
-        // 镜头拉近
-        viewer.camera.zoomOut(height * 1.2);
-    };
-    //经纬度显示
-    viewer.screenSpaceEventHandler.setInputAction(function (event) {
-        var earthPosition = viewer.camera.pickEllipsoid(
-            event.position,
-            viewer.scene.globe.ellipsoid
-        );
-        var cartographic = Cesium.Cartographic.fromCartesian(
-            earthPosition,
-            viewer.scene.globe.ellipsoid,
-            new Cesium.Cartographic()
-        );
-        var lat = Cesium.Math.toDegrees(cartographic.latitude);
-        var lng = Cesium.Math.toDegrees(cartographic.longitude);
-        var height = viewer.camera.positionCartographic.height;
-        document.getElementById('infobox').innerHTML =
-            '<span>经度：' +
-            lng.toFixed(3) +
-            '</span>' +
-            '<span>  纬度：' +
-            lat.toFixed(3) +
-            '</span>' +
-            '<span>  相机高度：' +
-            height +
-            '</span>';
-        // console.log(lat, lng, height);
-    }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+    // 根据坐标系标准，将笛卡尔坐标转换为地理坐标
+    let cartographic = ellipsoid.cartesianToCartographic(cameraPos);
+    // 获取镜头的高度
+    let height = cartographic.height;
+    // if (height < 40) {
+    //   return
+    // }
+    // 镜头拉近
+    viewer.camera.zoomOut(height * 1.2);
+  };
+  //经纬度显示
+  viewer.screenSpaceEventHandler.setInputAction(function (event) {
+    var earthPosition = viewer.camera.pickEllipsoid(
+      event.position,
+      viewer.scene.globe.ellipsoid
+    );
+    var cartographic = Cesium.Cartographic.fromCartesian(
+      earthPosition,
+      viewer.scene.globe.ellipsoid,
+      new Cesium.Cartographic()
+    );
+    var lat = Cesium.Math.toDegrees(cartographic.latitude);
+    var lng = Cesium.Math.toDegrees(cartographic.longitude);
+    var height = viewer.camera.positionCartographic.height;
+    document.getElementById('infobox').innerHTML =
+      '<span>经度：' +
+      lng.toFixed(3) +
+      '</span>' +
+      '<span>  纬度：' +
+      lat.toFixed(3) +
+      '</span>' +
+      '<span>  相机高度：' +
+      height +
+      '</span>';
+    // console.log(lat, lng, height);
+  }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
 </script>
 
 </html>

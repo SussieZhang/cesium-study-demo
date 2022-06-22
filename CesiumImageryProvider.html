@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>各类底图加载</title>
+    <script src="Cesium/Cesium.js"></script>
+    <link href="Cesium/Widgets/widgets.css" rel="stylesheet" />
+
+    <style>
+        html,
+        body {
+            display: block;
+            margin: 0;
+            height: 100%;
+        }
+
+        #cesiumContainer {
+            height: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="cesium-logo"></div>
+    <div id="cesiumContainer"></div>
+
+    <script>
+        // 设置在中国
+        Cesium.Camera.DEFAULT_VIEW_RECTANGLE = Cesium.Rectangle.fromDegrees(80, 22, 130, 50)
+        // //1:在线arcgis 在线服务 
+        // var imageryProvider = new Cesium.ArcGisMapServerImageryProvider({
+        //   url: 'https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer', //微信影像服务
+        //   //url: 'https://services.arcgisonline.com/ArcGIS/rest/services/Elevation/World_Hillshade/MapServer',//地形服务
+        //   enablePickFeatures: false,
+        // })
+        //2:本地geoserver EPSG:4326 wmts服务
+        var imageryProvider = new Cesium.WebMapTileServiceImageryProvider({
+            url: 'http://10.113.114.21:8080/geoserver/gwc/service/wmts/rest/map1:map2out//EPSG:4326/EPSG:4326:{TileMatrix}/{TileRow}/{TileCol}?format=image/png',
+            layer: 'map1:map2out',
+            style: '',
+            format: 'image/png',
+            tileMatrixSetID: 'EPSG:4326',
+            tilingScheme: new Cesium.GeographicTilingScheme({
+                numberOfLevelZeroTilesX: 2,
+                numberOfLevelZeroTilesY: 1
+            })
+        });
+        //3:本地geoserver EPSG:900913球形墨卡托 wmts服务
+        // var imageryProvider = new Cesium.WebMapTileServiceImageryProvider({
+        //   url: 'http://10.113.114.21:8080/geoserver/gwc/service/wmts/rest/map1:map1out//EPSG:900913/EPSG:900913:{TileMatrix}/{TileRow}/{TileCol}?format=image/png',
+        //   layer: 'map1:map1out',
+        //   style: '',
+        //   format: 'image/png',
+        //   tileMatrixSetID: 'EPSG:900913',
+        // });
+        var viewer = new Cesium.Viewer('cesiumContainer', {
+            imageryProvider: imageryProvider,
+            navigationHelpButton: false,
+            timeline: false,
+            animation: false,
+            fullscreenButton: false,
+            geocoder: false,
+            baseLayerPicker: false,
+            creditContainer: 'cesium-logo'
+        })
+    </script>
+</body>
+
+</html>

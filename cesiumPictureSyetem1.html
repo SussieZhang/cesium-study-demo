@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
+    <title>粒子系统1</title>
+    <script src="Cesium/Cesium.js"></script>
+    <link href="Cesium/Widgets/widgets.css" rel="stylesheet" />
+</head>
+
+<body>
+    <div id="cesiumContainer" class="fullSize"></div>
+    <script>
+        var esri = new Cesium.ArcGisMapServerImageryProvider({
+            url: 'https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer',
+            enablePickFeatures: false,
+        })
+        var viewer = new Cesium.Viewer("cesiumContainer", {
+            imageryProvider: esri,
+        });
+        Cesium.Math.setRandomNumberSeed(3);
+        viewer.clock.clockRange = Cesium.ClockRange.LOOP_STOP; //循环结束
+        viewer.clock.multiplier = 1;
+        viewer.clock.shouldAnimate = true;
+        viewer.camera.setView({
+            destination: Cesium.Cartesian3.fromDegrees(117, 39, 50)
+        });
+        //修改参数 看http://cesium.xin/cesium/cn/Documentation1.72/ParticleSystem.html?classFilter=ParticleSystem
+        var viewModel = {
+            emissionRate: 310,
+            gravity: 28,
+            minimumParticleLife: 0.5,
+            maximumParticleLife: 0.6,
+            minimumSpeed: 30,
+            maximumSpeed: 26,
+            startScale: 1,
+            endScale: 10,
+            particleSize: 5,
+        };
+        // Cesium.knockout.track(viewModel);
+        var entityPosition = new Cesium.Cartesian3();
+        var entityOrientation = new Cesium.Quaternion();
+        var rotationMatrix = new Cesium.Matrix3();
+        var modelMatrix = new Cesium.Matrix4();
+        function computeModelMatrix(entity, time) {
+            return entity.computeModelMatrix(time, new Cesium.Matrix4());
+        }
+        var emitterModelMatrix = new Cesium.Matrix4();
+        var translation = new Cesium.Cartesian3();
+        var rotation = new Cesium.Quaternion();
+        var hpr = new Cesium.HeadingPitchRoll();
+        var trs = new Cesium.TranslationRotationScale();
+        function computeEmitterModelMatrix() {
+            //控制粒子发射的方向
+            hpr = Cesium.HeadingPitchRoll.fromDegrees(0.0, 0.0, 0, hpr);
+            trs.translation = Cesium.Cartesian3.fromElements(
+                -4.0,
+                0.0,
+                1.4,
+                translation
+            );
+            trs.rotation = Cesium.Quaternion.fromHeadingPitchRoll(hpr, rotation);
+            return Cesium.Matrix4.fromTranslationRotationScale(
+                trs,
+                emitterModelMatrix
+            );
+        }
+        var entity = viewer.entities.add({
+            model: {
+                // minimumPixelSize: 64,
+            },
+            //控制位偏移
+            viewFrom: new Cesium.Cartesian3(-100.0, 0.0, 100.0),
+            // 控制粒子的位置
+            position: Cesium.Cartesian3.fromDegrees(117, 39, 5),
+        });
+        var scene = viewer.scene;
+        var particleSystem = scene.primitives.add(
+            new Cesium.ParticleSystem({
+                // 用于广告牌的URI，HTMLImageElement或HTMLCanvasElement。
+                // image: "../Cesium/Assets/Textures/waterNormals.jpg",
+                image: "data/images/fire.png",
+                // //粒子在其生命初期的颜色。
+                // startColor: Cesium.Color.LIGHTSEAGREEN.withAlpha(0.7),
+                // // 粒子寿命结束时的颜色。
+                // endColor: Cesium.Color.WHITE.withAlpha(0.0),
+                // // 在粒子寿命开始时应用于粒子图像的初始比例。
+                // startScale: viewModel.startScale,
+                // // 在粒子寿命结束时应用于粒子图像的最终比例。
+                // endScale: viewModel.endScale,
+                // // 设置以秒为单位的粒子生命的可能持续时间的最小范围，在该时间范围内可以随机选择粒子的实际生命。
+                // minimumParticleLife: viewModel.minimumParticleLife,
+                // //设置粒子寿命的可能持续时间的最大限制（以秒为单位），在该范围内将随机选择粒子的实际寿命。
+                // maximumParticleLife: viewModel.maximumParticleLife,
+                // //设置以米/秒为单位的最小界限，高于该界限时，将随机选择粒子的实际速度。
+                // minimumSpeed: viewModel.minimumSpeed,
+                // // 设置以米/秒为单位的最大范围，在该范围内将随机选择粒子的实际速度。
+                // maximumSpeed: viewModel.maximumSpeed,
+                // // 如果设置，则将覆盖用来缩放粒子图像尺寸（以像素为单位）的minimumImageSize和maximumImageSize输入。
+                // imageSize: new Cesium.Cartesian2(
+                //     viewModel.particleSize,
+                //     viewModel.particleSize
+                // ),
+                // // 每秒要发射的粒子数。
+                // emissionRate: viewModel.emissionRate,
+                // // ParticleBurst 的数组，在周期性的时间发射粒子爆发。
+                // bursts: [
+                //     //这些脉冲偶尔会同步以产生多色效果
+                //     new Cesium.ParticleBurst({
+                //         time: 0.1,
+                //         minimum: 10,
+                //         maximum: 100,
+                //     }),
+                //     new Cesium.ParticleBurst({
+                //         time: 0.2,
+                //         minimum: 50,
+                //         maximum: 100,
+                //     }),
+                //     new Cesium.ParticleBurst({
+                //         time: 0.3,
+                //         minimum: 200,
+                //         maximum: 300,
+                //     }),
+                // ],
+                // // 粒子系统发射粒子的时间（以秒为单位）。
+                // lifetime: 0.5,
+                // // 为此的粒子发射器（这里发射形式cesium官方有四种，可根据实际切换或开发）
+                // emitter: new Cesium.CircleEmitter(0.5),
+                // // {
+                // //emitter: new Cesium.CircleEmitter(2.0),
+                // // emitter:new Cesium.SphereEmitter(2.5),
+                // // emitter:new Cesium.ConeEmitter(
+                // //         Cesium.Math.toRadians(45.0)
+                // // ),
+                // // emitter:new Cesium.BoxEmitter(
+                // //         new Cesium.Cartesian3(10.0, 10.0, 10.0)
+                // // ),
+                // // }
+                // // 4x4转换矩阵，用于转换粒子系统局部坐标系内的粒子系统发射器。
+                // emitterModelMatrix: computeEmitterModelMatrix(),
+                // // 每帧都要调用一次回调函数以更新粒子。（控制粒子的变化）
+                // updateCallback: applyGravity,
+                /*-----------------------------------------------------*/
+                imageSize: new Cesium.Cartesian2(20, 20),
+                startScale: 1.0,
+                endScale: 4.0,
+                // Particle behavior
+                particleLife: 1.0,
+                speed: 5.0,
+                // Emitter parameters
+                emitter: new Cesium.CircleEmitter(0.5),
+                emissionRate: 5.0,
+                emitterModelMatrix: computeEmitterModelMatrix(),
+                // Particle system parameters
+                // modelMatrix: computeModelMatrix(),
+                lifetime: 16.0,
+                // loop:false
+            })
+        );
+        var gravityScratch = new Cesium.Cartesian3();
+        function applyGravity(p, dt) {
+            // 我们需要为地心空间中的每个粒子计算一个局部上方向向量
+            var position = p.position;
+            Cesium.Cartesian3.normalize(position, gravityScratch);
+            Cesium.Cartesian3.multiplyByScalar(
+                gravityScratch,
+                viewModel.gravity * dt,
+                gravityScratch
+            );
+            p.velocity = Cesium.Cartesian3.add(
+                p.velocity,
+                gravityScratch,
+                p.velocity
+            );
+        }
+        viewer.scene.preUpdate.addEventListener(function (scene, time) {
+            particleSystem.modelMatrix = computeModelMatrix(entity, time);
+            // 说明对发射器模型矩阵的任何更改
+            particleSystem.emitterModelMatrix = computeEmitterModelMatrix();
+        });
+    </script>
+</body>
+</html>
