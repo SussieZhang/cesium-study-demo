@@ -64,6 +64,18 @@
             baseLayerPicker: false,
             creditContainer: 'cesium-logo'
         })
+        pickPosintion(viewer)
+        function pickPosintion(viewer) {
+            var handler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
+            handler.setInputAction(function (event) {
+                var earthPosition = viewer.camera.pickEllipsoid(event.position, viewer.scene.globe.ellipsoid);
+                var cartographic = Cesium.Cartographic.fromCartesian(earthPosition, viewer.scene.globe.ellipsoid, new Cesium.Cartographic());
+                var lat = Cesium.Math.toDegrees(cartographic.latitude);
+                var lng = Cesium.Math.toDegrees(cartographic.longitude);
+                var height = cartographic.height;
+                console.log("[Lng=>" + lng + ",Lat=>" + lat + ",H=>" + height + "]");
+            }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+        }
     </script>
 </body>
 
